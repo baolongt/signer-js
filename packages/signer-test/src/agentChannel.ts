@@ -346,18 +346,24 @@ export class AgentChannel implements Channel {
                     request.method.startsWith("icrc37_")
                   ) {
                     // Built in validation, basically checks if variant with Err is returned
-                    const value = IDL.decode(
-                      [IDL.Variant({ Err: IDL.Reserved })],
-                      reply.value as ArrayBuffer,
-                    );
-                    if ("Err" in value) {
-                      batchFailed = true;
-                      return {
-                        error: {
-                          code: 1003,
-                          message: "Validation failed.",
-                        },
-                      };
+                    try {
+                      const value = IDL.decode(
+                        [IDL.Variant({ Err: IDL.Reserved })],
+                        reply.value as ArrayBuffer
+                      );
+                      if ("Err" in value) {
+                        batchFailed = true;
+                        return {
+                          error: {
+                            code: 1002,
+                            message: "Validation failed.",
+                          },
+                        };
+                      }
+                    }
+                    catch {
+                      // If this return error likely the response is not included Err variant
+                      // so we can assume it's valid
                     }
                   }
 
